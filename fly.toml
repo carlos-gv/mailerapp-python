@@ -1,51 +1,33 @@
-# fly.toml file generated for malerapp-python on 2022-08-29T20:58:18-05:00
+# fly.toml file generated for mailerapp-python on 2022-08-30T00:31:42-05:00
 
-app = "malerapp-python"
+app = "mailerapp-python"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
-[build]
-  builder = "paketobuildpacks/builder:base"
+[mounts]
+  destination = "/data"
+  source = "mysqldata"
 
 [env]
+  FLASK_APP = "app"
+  FLASK_DATABASE = "${MYSQL_DATABASE}"
+  FLASK_DATABASE_HOST = "${MYSQL_HOST}"
+  FLASK_DATABASE_PASSWORD = "${MYSQL_PASSWORD}"
+  FLASK_DATABASE_USER = "${MYSQL_USER}"
+  MYSQL_DATABASE = "Mailerdb"
+  MYSQL_HOST = "MailerHost"
+  MYSQL_USER = "Sqluser"
   PORT = "8080"
-  MYSQL_HOST="MailerHost"
-  MYSQL_DATABASE="Mailerdb"
-  MYSQL_USER="Sqluser"
-  FLASK_APP="app"
-  FLASK_DATABASE_USER="${MYSQL_USER}"
-  FLASK_DATABASE_PASSWORD="${MYSQL_PASSWORD}"
-  FLASK_DATABASE="${MYSQL_DATABASE}"
-  FLASK_DATABASE_HOST="${MYSQL_HOST}"
 
+[build]
+ builder = "paketobuildpacks/builder:base"
 
 [experimental]
-  allowed_public_ports = []
-  auto_rollback = true
+  cmd = [
+    "--default-authentication-plugin", 
+    "mysql_native_password", 
+    "--datadir", 
+    "/data/mysql"
+  ]
 
-[[services]]
-  http_checks = []
-  internal_port = 8080
-  processes = ["app"]
-  protocol = "tcp"
-  script_checks = []
-  [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
-    type = "connections"
-
-  [[services.ports]]
-    force_https = true
-    handlers = ["http"]
-    port = 80
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
-
-  [[services.tcp_checks]]
-    grace_period = "1s"
-    interval = "15s"
-    restart_limit = 0
-    timeout = "2s"
